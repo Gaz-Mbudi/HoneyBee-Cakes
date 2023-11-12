@@ -1,0 +1,199 @@
+---
+title: "Hbcb-Clustering-Model-doc"
+
+date: "2023-11-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Install and Load the Required Packages
+```{STEP 1}
+
+.libPaths()
+
+
+lapply(.libPaths(), list.files)
+
+
+if (require("languageserver")) {
+  require("languageserver")
+} else {
+  install.packages("languageserver", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+  
+  
+## readr ----
+if (require("readr")) {
+  require("readr")
+} else {
+  install.packages("readr", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## naniar ----
+if (require("naniar")) {
+  require("naniar")
+} else {
+  install.packages("naniar", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## ggplot2 ----
+if (require("ggplot2")) {
+  require("ggplot2")
+} else {
+  install.packages("ggplot2", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## corrplot ----
+if (require("corrplot")) {
+  require("corrplot")
+} else {
+  install.packages("corrplot", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## ggcorrplot ----
+if (require("ggcorrplot")) {
+  require("ggcorrplot")
+} else {
+  install.packages("ggcorrplot", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## caret ----
+if (require("caret")) {
+  require("caret")
+} else {
+  install.packages("caret", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+
+## tidyverse ----
+if (require("tidyverse")) {
+  require("tidyverse")
+} else {
+  install.packages("tidyverse", dependencies = TRUE,
+                   repos = "https://cloud.r-project.org")
+}
+```
+
+
+
+Load and view the Dataset
+```{STEP 2}
+
+library(readr)
+Hbcb_training_data <- read_csv("Hbcb-training-data.csv")
+View(Hbcb_training_data)
+
+str(Hbcb_training_data)
+dim(Hbcb_training_data)
+head(Hbcb_training_data)
+summary(Hbcb_training_data)
+
+```
+
+
+
+Checking for Missing Data and Address it
+```{STEP 3}
+
+# Are there missing values in the dataset?
+any_na(Hbcb_training_data)
+
+# How many?
+n_miss(Hbcb_training_data)
+
+# What is the proportion of missing data in the entire dataset?
+prop_miss(Hbcb_training_data)
+
+# What is the number and percentage of missing values grouped by
+# each variable?
+miss_var_summary(Hbcb_training_data)
+
+# Which variables contain the most missing values?
+gg_miss_var(Hbcb_training_data)
+
+# Which combinations of variables are missing together?
+gg_miss_upset(Hbcb_training_data)
+
+# Where are missing values located (the shaded regions in the plot)?
+vis_miss(Hbcb_training_data) +
+  theme(axis.text.x = element_text(angle = 80))
+
+```
+
+
+
+Perform EDA and Feature Selection
+```{STEP 4}
+
+# Option 1: Basic Table
+cor(Hbcb_training_data[, c(3, 4)]) %>%
+  View()
+
+# Option 2: Basic Plot
+cor(Hbcb_training_data[, c(3, 4)]) %>%
+  corrplot(method = "square")
+
+# Option 3: Fancy Plot using ggplot2
+corr_matrix <- cor(Hbcb_training_data[, c(3, 4)])
+
+p <- ggplot2::ggplot(data = reshape2::melt(corr_matrix),
+                     ggplot2::aes(Var1, Var2, fill = value)) +
+  ggplot2::geom_tile() +
+  ggplot2::geom_text(ggplot2::aes(label = label_wrap(label, width = 10)),
+                     size = 4) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
+ggcorrplot(corr_matrix, hc.order = TRUE, type = "lower", lab = TRUE)
+
+## Plot the scatter plots ----
+# A scatter plot to show Cake type against quantity
+ggplot(Hbcb_training_data, aes(x=productId, y=quantity)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE) +
+  labs(title="Cake analysis",
+       subtitle="Relationship between Type of cake and quantity") +
+  theme_bw()
+
+```
+
+
+
+Training the Model
+```{STEP 5}
+
+# Select relevant columns for clustering
+data_for_clustering <- Hbcb_training_data[, c("productId", "quantity")]
+
+# Standardize the data (optional but often recommended for k-means)
+scaled_data <- scale(data_for_clustering)
+
+# Perform k-means clustering with 4 clusters
+k <- 4  # Replace with the desired number of clusters
+kmeans_result <- kmeans(scaled_data, centers = k)
+
+# Add the cluster assignments back to the original data frame
+Hbcb_training_data$cluster <- kmeans_result$cluster
+
+# Print the results
+print(kmeans_result)
+print(Hbcb_training_data)
+
+# Create a scatter plot with different colors for each cluster
+ggplot(Hbcb_training_data, aes(x = productId, y = quantity, color = factor(cluster))) +
+  geom_point() +
+  labs(title = "K-Means Clustering",
+       x = "Product ID",
+       y = "Quantity") +
+  theme_minimal()
+
+```
+
