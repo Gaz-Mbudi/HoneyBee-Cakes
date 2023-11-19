@@ -102,28 +102,28 @@ summary(Hbcb_training_data)
 
 # STEP 3. Check for Missing Data and Address it ----
 # Are there missing values in the dataset?
-any_na(Hbcb_training_data)
+#any_na(Hbcb_training_data)
 
 # How many?
-n_miss(Hbcb_training_data)
+#n_miss(Hbcb_training_data)
 
 # What is the proportion of missing data in the entire dataset?
-prop_miss(Hbcb_training_data)
+#prop_miss(Hbcb_training_data)
 
 # What is the number and percentage of missing values grouped by
 # each variable?
-miss_var_summary(Hbcb_training_data)
+#miss_var_summary(Hbcb_training_data)
 
 
 
-# STEP 4 Training and Saving Clustering Algorithm
+# STEP 3 Training and Saving Clustering Algorithm
 set.seed(7)
 
 # Select columns 3 and 4 for k-means clustering
-columns_for_clustering <- Hbcb_training_data[, c(3, 4)]
+#columns_for_clustering <- Hbcb_training_data[, c(3, 4)]
 
 # Perform k-means clustering
-model_to_predict_clusters <- kmeans(columns_for_clustering, centers = 4, nstart = 20)
+model_to_predict_clusters <- kmeans(Hbcb_training_data[, c(3, 4)], centers = 4, nstart = 20)
 
 # Add the cluster assignments to the dataset
 Hbcb_training_data$cluster <- model_to_predict_clusters$cluster
@@ -153,30 +153,5 @@ saveRDS(model_to_predict_clusters, "./Hbcb_customer_segmentation_model.rds")
 
 # The saved model can then be loaded later
 model_to_predict_clusters <- readRDS("./Hbcb_customer_segmentation model.rds")
-print(model_to_predict_clusters)
-
-
-#STEP 5 Creating the REST API using Plumber
-
-#* @apiTitle Customer Segment Prediction Model API
-
-#* @apiDescription Used to predict which segment a customer belongs to.
-
-#* @param arg_productId The type of cake
-#* @param arg_qunatity The number of cakes bought
-
-#* @get /segment
-
-
-predict_cluster <- function(arg_productId, arg_quantity) {
-  # Create a data frame using the arguments
-  to_be_predicted <- data.frame(productId = as.numeric(arg_productId), quantity = as.numeric(arg_quantity))
-  
-  # Perform k-means clustering on the input data to obtain clusters
-  to_be_predicted$cluster <- predict(model_to_predict_clusters, to_be_predicted)
-  
-  # Predict the cluster using the model_to_predict_clusters
-  predict(model_to_predict_clusters, to_be_predicted)
-}
 
 

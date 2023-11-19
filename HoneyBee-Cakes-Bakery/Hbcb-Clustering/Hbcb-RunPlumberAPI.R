@@ -23,7 +23,7 @@ if (require("plumber")) {
 
 # STEP 2. Process a Plumber API 
 # This allows us to process a plumber API
-api <- plumber::plumb("Hbcb-Clustering-Model.R")
+api <- plumber::plumb("Hbcb-PlumberAPI.R")
 
 # STEP 3 Run the API on a specific port ----
 
