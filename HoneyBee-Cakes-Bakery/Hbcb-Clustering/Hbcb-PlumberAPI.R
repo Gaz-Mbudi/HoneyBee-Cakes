@@ -34,7 +34,7 @@ if (require("caret")) {
 }
 
 #load model
-model_to_predict_clusters <- readRDS("./Hbcb_customer_segmentation model.rds")
+model_to_predict_clusters <- readRDS("Hbcb_customer_segmentation_model.rds")
 
 #STEP 1 Creating the REST API using Plumber
 
@@ -50,14 +50,14 @@ model_to_predict_clusters <- readRDS("./Hbcb_customer_segmentation model.rds")
 
 predict_cluster <- function(arg_productId, arg_quantity) {
   # Create a data frame using the arguments
-  to_be_predicted <- data.frame(productId = as.integer(arg_productId), quantity = as.integer(arg_quantity))
+  to_be_predicted <- data.frame(productId = as.numeric(arg_productId), quantity = as.numeric(arg_quantity))
   
   # Perform k-means clustering on the input data to obtain clusters
-  to_be_predicted$cluster <- predict(model_to_predict_clusters, to_be_predicted)
+  # to_be_predicted$cluster <- predict(model_to_predict_clusters, to_be_predicted)
   
   
   # Predict the cluster using the model_to_predict_clusters
-  predicted_cluster <- predict(model_to_predict_clusters, newdata = to_be_predicted)
+  predict(model_to_predict_clusters, newdata = to_be_predicted)
 }
 
 
