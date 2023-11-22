@@ -90,7 +90,7 @@ if (require("plumber")) {
 # STEP 2. Load the Dataset ----
 
 library(readr)
-Hbcb_training_data <- read_csv("Hbcb-training-data.csv")
+Hbcb_training_data <- read_csv("HoneyBee-Cakes-Bakery/Hbcb-Clustering/Hbcb-training-data.csv")
 View(Hbcb_training_data)
 
 str(Hbcb_training_data)
@@ -140,6 +140,7 @@ train_control <- trainControl(method = "cv", number = 5)
 
 Hbcb_training_data  <- Hbcb_training_data %>% mutate(cluster = as.factor(cluster))
 
+Hbcb_training_data  <- Hbcb_training_data %>% select(productId, quantity, cluster)
 
 model_to_predict_clusters <-
   train(cluster ~ ., data = Hbcb_training_data, method = "svmRadial",
@@ -148,10 +149,10 @@ model_to_predict_clusters <-
 
 
 # Saving the k-means model
-saveRDS(model_to_predict_clusters, "./Hbcb_customer_segmentation_model.rds")
+saveRDS(model_to_predict_clusters, "HoneyBee-Cakes-Bakery/Hbcb-Clustering/Hbcb_customer_segmentation_model.rds")
 
 
 # The saved model can then be loaded later
-model_to_predict_clusters <- readRDS("./Hbcb_customer_segmentation model.rds")
+model_to_predict_clusters <- readRDS("HoneyBee-Cakes-Bakery/Hbcb-Clustering/Hbcb_customer_segmentation model.rds")
 
 
