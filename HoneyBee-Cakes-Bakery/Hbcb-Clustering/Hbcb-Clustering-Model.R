@@ -152,6 +152,6 @@ saveRDS(model_to_predict_clusters, "Hbcb_customer_segmentation_model.rds")
 
 
 # The saved model can then be loaded later
-model_to_predict_clusters <- readRDS("Hbcb_customer_segmentation model.rds")
+model_to_predict_clusters <- readRDS("Hbcb_customer_segmentation_model.rds")
 
 

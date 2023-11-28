@@ -424,7 +424,24 @@ if (require(&quot;tidyverse&quot;)) {
 } else {
   install.packages(&quot;tidyverse&quot;, dependencies = TRUE,
                    repos = &quot;https://cloud.r-project.org&quot;)
-}</code></pre>
+}
+  
+## httr ----
+if (require(&quot;httr&quot;)) {
+  require(&quot;httr&quot;)
+} else {
+  install.packages(&quot;httr&quot;, dependencies = TRUE,
+                   repos = &quot;https://cloud.r-project.org&quot;)
+}
+
+## jsonlite ----
+if (require(&quot;jsonlite&quot;)) {
+  require(&quot;jsonlite&quot;)
+} else {
+  install.packages(&quot;jsonlite&quot;, dependencies = TRUE,
+                   repos = &quot;https://cloud.r-project.org&quot;)
+}
+</code></pre>
 <p>Load and view the Dataset</p>
 <pre class="step"><code>
 library(readr)
@@ -436,7 +453,7 @@ dim(Hbcb_training_data)
 head(Hbcb_training_data)
 summary(Hbcb_training_data)
 </code></pre>
-<p>Checking for Missing Data and Address it</p>
+<p>Checking for Missing Data and Address it (Only if applicable)</p>
 <pre class="step"><code>
 # Are there missing values in the dataset?
 any_na(Hbcb_training_data)
@@ -461,64 +478,85 @@ gg_miss_upset(Hbcb_training_data)
 vis_miss(Hbcb_training_data) +
   theme(axis.text.x = element_text(angle = 80))
 </code></pre>
-<p>Perform EDA and Feature Selection</p>
+<p>Training and saving the model</p>
 <pre class="step"><code>
-# Option 1: Basic Table
-cor(Hbcb_training_data[, c(3, 4)]) %&gt;%
-  View()
+set.seed(7)
 
-# Option 2: Basic Plot
-cor(Hbcb_training_data[, c(3, 4)]) %&gt;%
-  corrplot(method = &quot;square&quot;)
+# Select columns 3 and 4 for k-means clustering
+#columns_for_clustering &lt;- Hbcb_training_data[, c(3, 4)]
 
-# Option 3: Fancy Plot using ggplot2
-corr_matrix &lt;- cor(Hbcb_training_data[, c(3, 4)])
+# Perform k-means clustering
+model_to_predict_clusters &lt;- kmeans(Hbcb_training_data[, c(3, 4)], centers = 4, nstart = 20)
 
-p &lt;- ggplot2::ggplot(data = reshape2::melt(corr_matrix),
-                     ggplot2::aes(Var1, Var2, fill = value)) +
-  ggplot2::geom_tile() +
-  ggplot2::geom_text(ggplot2::aes(label = label_wrap(label, width = 10)),
-                     size = 4) +
-  ggplot2::theme_minimal() +
-  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+# Add the cluster assignments to the dataset
+Hbcb_training_data$cluster &lt;- model_to_predict_clusters$cluster
 
-ggcorrplot(corr_matrix, hc.order = TRUE, type = &quot;lower&quot;, lab = TRUE)
+# Visualize the clustering results (modify this based on your requirements)
+# For example, if you want to visualize column 3 against column 4:
+plot(productId ~ quantity, 
+     data = Hbcb_training_data, 
+     col = Hbcb_training_data$cluster, 
+     main = &quot;Customer Segmentation&quot;)
 
-## Plot the scatter plots ----
-# A scatter plot to show Cake type against quantity
-ggplot(Hbcb_training_data, aes(x=productId, y=quantity)) +
-  geom_point() +
-  geom_smooth(method=&quot;lm&quot;, se=FALSE) +
-  labs(title=&quot;Cake analysis&quot;,
-       subtitle=&quot;Relationship between Type of cake and quantity&quot;) +
-  theme_bw()
+
+train_control &lt;- trainControl(method = &quot;cv&quot;, number = 5)
+
+Hbcb_training_data  &lt;- Hbcb_training_data %&gt;% mutate(cluster = as.factor(cluster))
+
+Hbcb_training_data  &lt;- Hbcb_training_data %&gt;% select(productId, quantity, cluster)
+
+model_to_predict_clusters &lt;-
+  train(cluster ~ ., data = Hbcb_training_data, method = &quot;svmRadial&quot;,
+        metric = &quot;Accuracy&quot;, trControl = train_control)
+
+
+
+# Saving the k-means model
+saveRDS(model_to_predict_clusters, &quot;Hbcb_customer_segmentation_model.rds&quot;)
+
+
+# The saved model can then be loaded later
+model_to_predict_clusters &lt;- readRDS(&quot;Hbcb_customer_segmentation_model.rds&quot;)
 </code></pre>
-<p>Training the Model</p>
+<p>Loading the Model</p>
 <pre class="step"><code>
-# Select relevant columns for clustering
-data_for_clustering &lt;- Hbcb_training_data[, c(&quot;productId&quot;, &quot;quantity&quot;)]
+#load model
+model_to_predict_clusters &lt;- readRDS(&quot;Hbcb_customer_segmentation_model.rds&quot;)
+</code></pre>
+<p>Creating a REST API using Plumber and defining the function</p>
+<pre class="step"><code>
+#Creating the REST API using Plumber
 
-# Standardize the data (optional but often recommended for k-means)
-scaled_data &lt;- scale(data_for_clustering)
+#* @apiTitle Customer Segment Prediction Model API
 
-# Perform k-means clustering with 4 clusters
-k &lt;- 4  # Replace with the desired number of clusters
-kmeans_result &lt;- kmeans(scaled_data, centers = k)
+#* @apiDescription Used to predict which segment a customer belongs to.
 
-# Add the cluster assignments back to the original data frame
-Hbcb_training_data$cluster &lt;- kmeans_result$cluster
+#* @param arg_productId The type of cake
+#* @param arg_qunatity The number of cakes bought
 
-# Print the results
-print(kmeans_result)
-print(Hbcb_training_data)
+#* @get /segment
 
-# Create a scatter plot with different colors for each cluster
-ggplot(Hbcb_training_data, aes(x = productId, y = quantity, color = factor(cluster))) +
-  geom_point() +
-  labs(title = &quot;K-Means Clustering&quot;,
-       x = &quot;Product ID&quot;,
-       y = &quot;Quantity&quot;) +
-  theme_minimal()
+
+predict_cluster &lt;- function(arg_productId, arg_quantity) {
+  # Create a data frame using the arguments
+  to_be_predicted &lt;- data.frame(productId = as.numeric(arg_productId), quantity = as.numeric(arg_quantity))
+  
+  # Perform k-means clustering on the input data to obtain clusters
+  # to_be_predicted$cluster &lt;- predict(model_to_predict_clusters, to_be_predicted)
+  
+  
+  # Predict the cluster using the model_to_predict_clusters
+  predict(model_to_predict_clusters, newdata = to_be_predicted)
+}
+</code></pre>
+<p>Testing the API</p>
+<pre class="step"><code>
+# This allows us to process a plumber API
+api &lt;- plumber::plumb(&quot;Hbcb-PlumberAPI.R&quot;)
+
+# Run the API on a specific port ----
+
+api$run(host = &quot;127.0.0.1&quot;, port = 5022)
 </code></pre>
 
 

@@ -33,6 +33,8 @@
 			<li><a href="manage-subscribers.php"><i class="fa fa-table"></i> Manage Subscribers</a></li>
 			<li><a href="employee.php"><i class="fa fa-users"></i> Manage Employees</a></li>
 
+			<li><a href="cluster.php"><i class="fa fa-users"></i> Customer Cluster</a></li>
+
 
 		</ul>
 	</nav>
