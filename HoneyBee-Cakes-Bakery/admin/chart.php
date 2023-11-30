@@ -60,6 +60,16 @@ if (strlen($_SESSION['alogin']) == 0) {
                         <h2 class="page-header">Order Analysis</h2>
                         <canvas id="chartjs_bar"></canvas>
                     </div>
+                    <div style="width:60%; height:20%; text-align:center">
+                        <button onClick="window.print()">Print Bar Chart</button>
+                        <h2 class="page-header">Order Analysis</h2>
+                        <canvas id="chartjs_line"></canvas>
+                    </div>
+                    <div style="width:60%; height:20%; text-align:center">
+                        <button onClick="window.print()">Print Bar Chart</button>
+                        <h2 class="page-header">Order Analysis</h2>
+                        <canvas id="chartjs_pie"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -143,9 +153,56 @@ if (strlen($_SESSION['alogin']) == 0) {
                     }
                 }
             });
+
+            // JavaScript code to render the line chart
+    var ctxLine = document.getElementById("chartjs_line").getContext('2d');
+    var myLineChart = new Chart(ctxLine, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode($productNames); ?>,
+            datasets: [{
+                label: 'Product Sales Trend',
+                data: <?php echo json_encode($totalQuantities); ?>,
+                fill: false,
+                borderColor: "#4CAF50",
+                backgroundColor: "#fff",
+                pointBorderColor: "#4CAF50",
+                pointBackgroundColor: "#fff",
+                pointRadius: 5,
+                pointHoverRadius: 10,
+            }]
+        },
+        options: {
+            // Add any desired options for the line chart here
+        }
+    });
+
+    // JavaScript code to render the pie chart
+    var ctxPie = document.getElementById("chartjs_pie").getContext('2d');
+    var myPieChart = new Chart(ctxPie, {
+        type: 'pie',
+        data: {
+            labels: <?php echo json_encode($productNames); ?>,
+            datasets: [{
+                data: <?php echo json_encode($totalQuantities); ?>,
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    // Add more colors if needed
+                ],
+            }]
+        },
+        options: {
+            // Add any desired options for the pie chart here
+        }
+    });
             
         </script>
     </body>
 
     </html>
+    <!-- Add Canvas elements for Line Chart and Pie Chart -->
+
+
 <?php } ?>
