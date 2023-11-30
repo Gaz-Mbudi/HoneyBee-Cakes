@@ -61,13 +61,13 @@ if (strlen($_SESSION['alogin']) == 0) {
                         <canvas id="chartjs_bar"></canvas>
                     </div>
                     <div style="width:60%; height:20%; text-align:center">
-                        <button onClick="window.print()">Print Bar Chart</button>
-                        <h2 class="page-header">Order Analysis</h2>
+                        <!-- <button onClick="window.print()">Print Bar Chart</button> -->
+                        <h2 class="page-header">Product Sales Trend</h2>
                         <canvas id="chartjs_line"></canvas>
                     </div>
                     <div style="width:60%; height:20%; text-align:center">
-                        <button onClick="window.print()">Print Bar Chart</button>
-                        <h2 class="page-header">Order Analysis</h2>
+                        <!-- <button onClick="window.print()">Print Bar Chart</button> -->
+                        <h2 class="page-header">Product Distribution</h2>
                         <canvas id="chartjs_pie"></canvas>
                     </div>
                 </div>
