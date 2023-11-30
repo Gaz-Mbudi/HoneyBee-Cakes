@@ -89,7 +89,7 @@ if (require("plumber")) {
 # STEP 2. Load the Dataset ----
 
 library(readr)
-Hbcb_training_data <- read_csv("Hbcb-training-data.csv")
+Hbcb_training_data <- read_csv("C:/xampp/htdocs/HoneyBee-Cakes/HoneyBee-Cakes-Bakery/Hbcb-Clustering/Hbcb-training-data.csv")
 View(Hbcb_training_data)
 
 str(Hbcb_training_data)
@@ -153,5 +153,7 @@ saveRDS(model_to_predict_clusters, "Hbcb_customer_segmentation_model.rds")
 
 # The saved model can then be loaded later
 model_to_predict_clusters <- readRDS("Hbcb_customer_segmentation_model.rds")
+
+
 
 
