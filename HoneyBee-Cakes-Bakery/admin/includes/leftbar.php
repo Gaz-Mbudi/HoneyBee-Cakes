@@ -3,7 +3,7 @@
 
 			<li class="ts-label">Main Menu</li>
 			<li><a href="dashboard.php"><i class="fa fa-dashboard"></i> Dashboard</a></li>
-			<li><a href="chart.php"><i class="fa fa-dashboard"></i> Bar Chart</a></li>
+			<li><a href="chart.php"><i class="fa fa-dashboard"></i> Charts</a></li>
 			<li><a href="#"><i class="fa fa-files-o"></i> Categories</a>
 				<ul>
 					<li><a href="create-brand.php">Create Category</a></li>
